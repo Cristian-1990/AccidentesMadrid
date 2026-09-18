@@ -4,9 +4,18 @@ using AccidentesMadrid.Back.Models;
 using CSharpFunctionalExtensions;
 
 namespace AccidentesMadrid.Back.Mappers;
-
+/// <summary>
+/// Agrupa y divide las filas del Csv en modelos del dominio
+/// </summary>
 public static class AccidenteMapper
 {
+    /// <summary>
+    /// Convierte, valida y descarta la fila  de un csv en atributos de la clase del dominio.
+    /// Si un campo falla en la conversion descarta la fila y devuelve un DomainError
+    /// </summary>
+    /// <param name="fila">La fila leida del csv sin procesar</param>
+    /// <returns>Si todos los campos obligatorios son válidos devuelve un Accidente,
+    /// si no lo son devuelve el error de la conversion de esa fila</returns>
     public static Result<Accidente, DomainError> ToAccidente(this AccidenteCsv fila)
     {
         bool? positivaAlcohol = fila.PositivaAlcohol
@@ -26,7 +35,6 @@ public static class AccidenteMapper
         if (!DateOnly.TryParseExact(fila.Fecha, "dd/MM/yyyy", out var fecha))
             return Result.Failure<Accidente, DomainError>(
                 AccidenteErrors.FilaInvalida(fila.NumExpediente ?? "desconocido", "fecha con formato incorrecto"));
-
         if (!TimeOnly.TryParse(fila.Hora, out var hora))
             return Result.Failure<Accidente, DomainError>(
                 AccidenteErrors.FilaInvalida(fila.NumExpediente ?? "desconocido", "hora con formato incorrecto"));
@@ -35,8 +43,8 @@ public static class AccidenteMapper
         int? codLesividad = int.TryParse(fila.CodLesividad, out var cl) ? cl : null;
         
         if (!int.TryParse(fila.CodDistrito, out var codDistrito))
-            return Result.Failure<Accidente, DomainError>(
-                AccidenteErrors.FilaInvalida(fila.NumExpediente ?? "desconocido", "código de distrito no es un número válido"));
+            return Result.Failure<Accidente, DomainError>(AccidenteErrors.FilaInvalida(fila.NumExpediente ?? "desconocido", "código de distrito no es un número válido"));
+        
         var accidente = new Accidente
         {
             
