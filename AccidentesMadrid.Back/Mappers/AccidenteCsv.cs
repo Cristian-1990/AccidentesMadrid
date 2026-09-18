@@ -6,7 +6,7 @@ namespace AccidentesMadrid.Back.Mappers;
 ///Conecta una columna del Csv con la propiedad dónde debe  guardar el valor
 /// Acepta valores null porque ya limpiaremos esos campos en el mapper.
 /// </summary>
-public class AccidenteCsvRow
+public class AccidenteCsv
 {
     [Name("num_expediente")]
     public string? NumExpediente { get; set; }
