@@ -1,0 +1,16 @@
+# Compilación
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+# Resultados de tests
+[Tt]est[Rr]esult*/
+*.trx
+
+# Datos (los CSV son pesados, no van al repo)
+data/*.csv
