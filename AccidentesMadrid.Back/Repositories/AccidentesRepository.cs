@@ -2,6 +2,7 @@ using AccidentesMadrid.Back.Errors;
 using AccidentesMadrid.Back.Errors.Common;
 using AccidentesMadrid.Back.Models;
 using AccidentesMadrid.Back.Mappers;
+using CsvHelper.Configuration;
 using CsvHelper;
 using System.Globalization;
 using CSharpFunctionalExtensions;
@@ -43,12 +44,17 @@ public class AccidentesRepository
         var accidentes = new List<Accidente>();
         var descartados = new List<DomainError>();
 
+        //Cambiamos el separador por defecto "," por ";"
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = ";"
+        };
         //Una vez verificada las rutas existentes las recorre y va añadiendo filas.
         //Tanto si son accidentes correctos como si son descartes.
         foreach (var ruta in rutas)
         {
             using var reader = new StreamReader(ruta);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = new CsvReader(reader, config);
             var filas = csv.GetRecords<AccidenteCsv>();
             //Para después recorrer el IEnumerable de accidentes y añadirla en descarte o accidente
             foreach (var fila in filas)
