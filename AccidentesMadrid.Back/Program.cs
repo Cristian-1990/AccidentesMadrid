@@ -2,12 +2,26 @@
 using AccidentesMadrid.Back.Repositories;
 
 var repo = new AccidentesRepository();
-var stopwatch = Stopwatch.StartNew();
 
-var resultado = repo.LeerAccidentes(["data/Accidentes-2025.csv"]);
+string[] rutas = [
+    "data/Accidentes-2024.csv",
+    "data/Accidentes-2025.csv",
+    "data/Accidentes-2026.csv"
+];
 
-stopwatch.Stop();
+//=========LECTURA SECUENCIAL==================
+var stopwatchSecuencial = Stopwatch.StartNew();
+var totalAccidentesSecuencial = 0;
+foreach (var ruta in rutas)
+{
+    var resultadoFichero = await repo.LeerAccidentesAsync([ruta]);
+    totalAccidentesSecuencial += resultadoFichero.Value.Accidentes.Count;
+}
+stopwatchSecuencial.Stop();
+Console.WriteLine($"Secuencial: {stopwatchSecuencial.ElapsedMilliseconds} ms, {totalAccidentesSecuencial} accidentes");
 
-Console.WriteLine($"Tiempo: {stopwatch.ElapsedMilliseconds} ms");
-Console.WriteLine($"Accidentes: {resultado.Value.Accidentes.Count}");
-Console.WriteLine($"Descartados: {resultado.Value.Descartados.Count}");
+//=========LECTURA SECUENCIAL==================
+var stopwatchParalelo = Stopwatch.StartNew();
+var resultado = await repo.LeerAccidentesAsync(rutas);
+stopwatchParalelo.Stop();
+Console.WriteLine($"Paralelo: {stopwatchParalelo.ElapsedMilliseconds} ms, {resultado.Value.Accidentes.Count} accidentes");

@@ -7,11 +7,10 @@ using CsvHelper;
 using System.Globalization;
 using CSharpFunctionalExtensions;
 
-
 namespace AccidentesMadrid.Back.Repositories;
 /// <summary>
 /// Gestiona los ficheros del repo y comprueba que existen,
-/// para poder construir la coleccion de accidentes sobre lka que vamos a trabajr las consultas
+/// para poder construir la coleccion de accidentes sobre la que vamos a trabajar las consultas
 /// </summary>
 public class AccidentesRepository
 {
@@ -29,42 +28,63 @@ public class AccidentesRepository
 
         return Result.Success<string[], DomainError>(rutas);
     }
-    
+
     /// <summary>
-    /// Lee los archivos de principio a fin creando dos listas, una de Accidentes correctos y otra con los descartes
+    /// Lee un unico fichero CSV y devuelve sus propias listas de accidentes y descartes.
+    /// No comparte estado con otras llamadas, para poder ejecutarse en paralelo sin conflictos.
     /// </summary>
-    /// <param name="rutas">Ruta en la que se encuntran los archivos</param>
-    /// <returns>Devuelve las dos listas de Accidentes o DomainError</returns>
-    public Result<(List<Accidente> Accidentes, List<DomainError> Descartados), DomainError> LeerAccidentes(string[] rutas)
+    /// <param name="ruta">Ruta del fichero a leer</param>
+    /// <param name="config">Configuracion de CsvHelper (separador, cultura...)</param>
+    /// <returns>Tupla con los accidentes correctos y los descartes de ese fichero</returns>
+    private (List<Accidente> Accidentes, List<DomainError> Descartados) LeerFichero(string ruta, CsvConfiguration config)
+    {
+        var accidentes = new List<Accidente>();
+        var descartados = new List<DomainError>();
+
+        using var reader = new StreamReader(ruta);
+        using var csv = new CsvReader(reader, config);
+        var filas = csv.GetRecords<AccidenteCsv>();
+
+        foreach (var fila in filas)
+        {
+            var resultado = fila.ToAccidente();
+            if (resultado.IsSuccess)
+                accidentes.Add(resultado.Value);
+            else
+                descartados.Add(resultado.Error);
+        }
+
+        return (accidentes, descartados);
+    }
+
+    /// <summary>
+    /// Lee los ficheros en paralelo (uno por hilo con Task.Run) y combina sus resultados
+    /// una vez que todos han terminado.
+    /// </summary>
+    /// <param name="rutas">Rutas de los ficheros a leer</param>
+    /// <returns>Devuelve las dos listas combinadas de Accidentes o DomainError</returns>
+    public async Task<Result<(List<Accidente> Accidentes, List<DomainError> Descartados), DomainError>> LeerAccidentesAsync(string[] rutas)
     {
         var comprobacion = ComprobarFicheros(rutas);
         if (comprobacion.IsFailure)
             return Result.Failure<(List<Accidente>, List<DomainError>), DomainError>(comprobacion.Error);
-
-        var accidentes = new List<Accidente>();
-        var descartados = new List<DomainError>();
 
         //Cambiamos el separador por defecto "," por ";"
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             Delimiter = ";"
         };
-        //Una vez verificada las rutas existentes las recorre y va añadiendo filas.
-        //Tanto si son accidentes correctos como si son descartes.
-        foreach (var ruta in rutas)
+
+        var tareas = rutas.Select(ruta => Task.Run(() => LeerFichero(ruta, config))).ToArray();
+        var resultados = await Task.WhenAll(tareas);
+
+        var accidentes = new List<Accidente>();
+        var descartados = new List<DomainError>();
+
+        foreach (var resultado in resultados)
         {
-            using var reader = new StreamReader(ruta);
-            using var csv = new CsvReader(reader, config);
-            var filas = csv.GetRecords<AccidenteCsv>();
-            //Para después recorrer el IEnumerable de accidentes y añadirla en descarte o accidente
-            foreach (var fila in filas)
-            {
-                var resultado = fila.ToAccidente();
-                if (resultado.IsSuccess)
-                    accidentes.Add(resultado.Value);
-                else
-                    descartados.Add(resultado.Error);
-            }
+            accidentes.AddRange(resultado.Accidentes);
+            descartados.AddRange(resultado.Descartados);
         }
 
         return Result.Success<(List<Accidente>, List<DomainError>), DomainError>((accidentes, descartados));
