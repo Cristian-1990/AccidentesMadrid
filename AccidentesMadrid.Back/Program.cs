@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using AccidentesMadrid.Back.Repositories;
+using Microsoft.Data.Analysis;
 using AccidentesMadrid.Back.Services;
 
 var repo = new AccidentesRepository();
@@ -72,6 +73,75 @@ Medir("29b. Lesión más frecuente por año (PLINQ)", () => analyzer.LesionMasFr
 Medir("30. Evolución de peatones por año", () => analyzer.EvolucionPeatonesPorAnio());
 
 
+
+
+
+var tiposColumna = Enumerable.Repeat(typeof(string), 19).ToArray();
+
+
+string[] rutasCsv = ["data/Accidentes-2024.csv", "data/Accidentes-2025.csv", "data/Accidentes-2026.csv"];
+
+using var ms = new MemoryStream();
+using (var writer = new StreamWriter(ms, leaveOpen: true))
+{
+    for (int i = 0; i < rutasCsv.Length; i++)
+    {
+        var lineas = File.ReadLines(rutasCsv[i]);
+        foreach (var linea in i == 0 ? lineas : lineas.Skip(1)) // salta la cabecera repetida en 2º y 3er fichero
+            writer.WriteLine(linea);
+    }
+}
+ms.Position = 0;
+
+var df = DataFrame.LoadCsv(ms, separator: ';', dataTypes: tiposColumna);
+
+foreach (var columna in df.Columns)
+{
+    Console.WriteLine($"{columna.Name}: {columna.DataType}");
+}
+var dataFrame = new AccidentesDataFrame(df);
+Console.WriteLine($"DF Total: {dataFrame.TotalAccidentes()}");
+Console.WriteLine($"DF Alcohol+: {dataFrame.PositivosEnAlcohol()}");
+
+Console.WriteLine("LINQ combinado (3 años):");
+foreach (var (d, t) in analyzer.AccidentesPorDistritoTop5())
+    Console.WriteLine($"  {d}: {t}");
+
+Console.WriteLine("DF combinado (3 años):");
+foreach (var (d, t) in dataFrame.AccidentesPorDistritoTop5())
+    Console.WriteLine($"  {d}: {t}");
+//=========DATAFRAME======================
+//=======CONSULTAS DATAFRAME============
+Medir("1. Total accidentes (DF)", () => dataFrame.TotalAccidentes());
+Medir("2. Accidentes por distrito (top 5) (DF)", () => dataFrame.AccidentesPorDistritoTop5());
+Medir("3. Accidentes por tipo (DF)", () => dataFrame.AccidentesPorTipo());
+Medir("4. Accidentes por estado meteorológico (DF)", () => dataFrame.AccidentesPorEstadoMeteorologico());
+Medir("5. Accidentes por sexo (DF)", () => dataFrame.AccidentesPorSexo());
+Medir("6. Accidentes por rango de edad (DF)", () => dataFrame.AccidentesPorRangoEdad());
+Medir("7. Positivos en alcohol (DF)", () => dataFrame.PositivosEnAlcohol());
+Medir("8. Positivos en drogas (DF)", () => dataFrame.PositivosEnDrogas());
+Medir("9. Accidentes por día de la semana (DF)", () => dataFrame.AccidentesPorDiaSemana());
+Medir("10. Accidentes por mes (DF)", () => dataFrame.AccidentesPorMes());
+Medir("11. Hora con más accidentes (DF)", () => dataFrame.HoraConMasAccidentes());
+Medir("12. Lesiones más frecuentes (DF)", () => dataFrame.LesionesMasFrecuentes());
+Medir("13. Tipo de vehículo más implicado (DF)", () => dataFrame.TipoVehiculoMasImplicado());
+Medir("14. Accidentes con peatones (DF)", () => dataFrame.DistritosConMasPeatones());
+Medir("15. Proporción hombre/mujer (DF)", () => dataFrame.ProporcionHombreMujer());
+Medir("16. Distritos con más peatones (DF)", () => dataFrame.DistritosConMasPeatones());
+Medir("17. Fin de semana vs entre semana (DF)", () => dataFrame.FinDeSemanaVsEntreSemana());
+Medir("18. Media de accidentes por día (DF)", () => dataFrame.MediaAccidentesPorDia());
+Medir("19. Accidentes con alcohol + droga (DF)", () => dataFrame.AccidentesConAlcoholYDroga());
+Medir("20. Rangos de edad más vulnerables (peatones) (DF)", () => dataFrame.RangosEdadMasVulnerablesPeatones());
+Medir("21. Distritos con más positivos en alcohol (DF)", () => dataFrame.DistritosConMasPositivosAlcohol());
+Medir("22. Accidentes por código de distrito (DF)", () => dataFrame.AccidentesPorCodDistrito());
+Medir("23. Accidentes por año (DF)", () => dataFrame.AccidentesPorAnio());
+Medir("24. Evolución mensual por año (DF)", () => dataFrame.EvolucionMensualPorAnio());
+Medir("25. Distrito con más accidentes por año (DF)", () => dataFrame.DistritoConMasAccidentesPorAnio());
+Medir("26. Tendencia de alcohol por año (DF)", () => dataFrame.TendenciaAlcoholPorAnio());
+Medir("27. Comparativa fin de semana vs entre semana por año (DF)", () => dataFrame.ComparativaFinDeSemanaEntreSemanaPorAnio());
+Medir("28. Hora pico por año (DF)", () => dataFrame.HoraPicoPorAnio());
+Medir("29. Lesión más frecuente por año (DF)", () => dataFrame.LesionMasFrecuentePorAnio());
+Medir("30. Evolución de peatones por año (DF)", () => dataFrame.EvolucionPeatonesPorAnio());
 //=========MEDIDOR DE CONSULTAS===============
 static void Medir<T>(string nombre, Func<T> consulta)
 {
