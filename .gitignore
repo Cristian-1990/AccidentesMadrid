@@ -13,4 +13,4 @@ obj/
 *.trx
 
 # Datos (los CSV son pesados, no van al repo)
-data/*.csv
+**/Data/*.csv
