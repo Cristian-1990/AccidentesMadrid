@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using AccidentesMadrid.Back.Repositories;
+using AccidentesMadrid.Back.Services;
 
 var repo = new AccidentesRepository();
 
@@ -25,3 +26,13 @@ var stopwatchParalelo = Stopwatch.StartNew();
 var resultado = await repo.LeerAccidentesAsync(rutas);
 stopwatchParalelo.Stop();
 Console.WriteLine($"Paralelo: {stopwatchParalelo.ElapsedMilliseconds} ms, {resultado.Value.Accidentes.Count} accidentes");
+
+//=======CONSULTAS LOINQ============
+var analyzer = new AccidentesLinq(resultado.Value.Accidentes);
+
+Console.WriteLine($"Total accidentes: {analyzer.TotalAccidentes()}");
+Console.WriteLine($"Hora con más accidentes: {analyzer.HoraConMasAccidentes()}");
+Console.WriteLine($"Tipo de vehículo más implicado: {analyzer.TipoVehiculoMasImplicado()}");
+
+foreach (var (anio, distrito, total) in analyzer.DistritoConMasAccidentesPorAnio())
+    Console.WriteLine($"{anio}: {distrito} ({total} accidentes)");
