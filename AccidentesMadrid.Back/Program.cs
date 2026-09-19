@@ -20,7 +20,7 @@ foreach (var ruta in rutas)
 stopwatchSecuencial.Stop();
 Console.WriteLine($"Secuencial: {stopwatchSecuencial.ElapsedMilliseconds} ms, {totalAccidentesSecuencial} accidentes");
 
-//=========LECTURA SECUENCIAL==================
+//=========LECTURA PARALELO==================
 var stopwatchParalelo = Stopwatch.StartNew();
 var resultado = await repo.LeerAccidentesAsync(rutas);
 stopwatchParalelo.Stop();
