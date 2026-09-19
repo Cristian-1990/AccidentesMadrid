@@ -256,7 +256,7 @@ public class AccidentesLinq(List<Accidente> accidentes)
             .ToList();
         return resultado;
     }
-
+    //26
     public List<(int Anio, int Total)> TendenciaAlcoholPorAnio()
     {
         var resultado = accidentes
@@ -267,7 +267,7 @@ public class AccidentesLinq(List<Accidente> accidentes)
             .ToList();
         return resultado;
     }
-
+    //27
     public List<(int Anio, int FinDeSemana, int EntreSemana)> ComparativaFinDeSemanaEntreSemanaPorAnio()
     {
         var accidentesUnicos = accidentes.DistinctBy(a => a.NumExpediente).ToList();
@@ -284,7 +284,7 @@ public class AccidentesLinq(List<Accidente> accidentes)
             .ToList();
         return resultado;
     }
-
+    //28
     public List<(int Anio, int Hora, int Total)> HoraPicoPorAnio()
     {
         var resultado = accidentes
@@ -302,8 +302,8 @@ public class AccidentesLinq(List<Accidente> accidentes)
             .OrderBy(x => x.Anio)
             .ToList();
         return resultado;
-    }
-
+    } 
+    //29
     public List<(int Anio, string Lesividad, int Total)> LesionMasFrecuentePorAnio()
     {
         var resultado = accidentes
@@ -321,13 +321,31 @@ public class AccidentesLinq(List<Accidente> accidentes)
             .ToList();
         return resultado;
     }
-
+    //30
     public List<(int Anio, int Total)> EvolucionPeatonesPorAnio()
     {
         var resultado = accidentes
             .Where(a => a.TipoPersona == "Peatón")
             .GroupBy(a => a.Fecha.Year)
             .Select(g => (Anio: g.Key, Total: g.Count()))
+            .OrderBy(x => x.Anio)
+            .ToList();
+        return resultado;
+    }
+    public List<(int Anio, string Lesividad, int Total)> LesionMasFrecuentePorAnioParalelo()
+    {
+        var resultado = accidentes
+            .AsParallel()
+            .GroupBy(a => a.Fecha.Year)
+            .Select(grupoAnio =>
+            {
+                var lesionTop = grupoAnio
+                    .GroupBy(a => a.Lesividad ?? "Desconocido")
+                    .OrderByDescending(g => g.Count())
+                    .First();
+
+                return (Anio: grupoAnio.Key, Lesividad: lesionTop.Key, Total: lesionTop.Count());
+            })
             .OrderBy(x => x.Anio)
             .ToList();
         return resultado;
