@@ -1,0 +1,5 @@
+﻿services:
+  accidentesmadrid:
+    build: .
+    volumes:
+      - ./AccidentesMadrid.Back/Data:/app/data
