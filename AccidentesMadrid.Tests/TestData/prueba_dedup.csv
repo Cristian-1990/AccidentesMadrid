@@ -1,0 +1,4 @@
+﻿num_expediente;fecha;hora;localizacion;numero;cod_distrito;distrito;tipo_accidente;estado_meteorológico;tipo_vehiculo;tipo_persona;rango_edad;sexo;cod_lesividad;lesividad;coordenada_x_utm;coordenada_y_utm;positiva_alcohol;positiva_droga
+100;01/01/2025;10:00:00;CALLE TEST;1;5;CENTRO;Colisión;Despejado;Turismo;Conductor;De 30 a 34 años;Hombre;7;Leve;440000;4470000;N;
+100;01/01/2025;10:00:00;CALLE TEST;1;5;CENTRO;Colisión;Despejado;Turismo;Peatón;De 40 a 44 años;Mujer;3;Grave;440000;4470000;S;1
+200;02/01/2025;11:00:00;CALLE TEST;2;3;RETIRO;Alcance;Lluvia;Motocicleta;Conductor;De 25 a 29 años;Mujer;3;Grave;441000;4471000;N;

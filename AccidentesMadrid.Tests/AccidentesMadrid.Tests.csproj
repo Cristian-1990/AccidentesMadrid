@@ -20,12 +20,13 @@
   <ItemGroup>
     <Using Include="NUnit.Framework" />
   </ItemGroup>
-<ItemGroup>
-  <None Include="TestData\prueba.csv" CopyToOutputDirectory="PreserveNewest" />
-</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AccidentesMadrid.Back\AccidentesMadrid.Back.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\prueba.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="TestData\prueba_dedup.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
