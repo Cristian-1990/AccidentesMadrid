@@ -31,14 +31,6 @@ Console.WriteLine($"Paralelo: {stopwatchParalelo.ElapsedMilliseconds} ms, {resul
 //=======CONSULTAS LOINQ============
 var analyzer = new AccidentesLinq(resultado.Value.Accidentes);
 
-Console.WriteLine($"Total accidentes: {analyzer.TotalAccidentes()}");
-Console.WriteLine($"Hora con más accidentes: {analyzer.HoraConMasAccidentes()}");
-Console.WriteLine($"Tipo de vehículo más implicado: {analyzer.TipoVehiculoMasImplicado()}");
-
-foreach (var (anio, distrito, total) in analyzer.DistritoConMasAccidentesPorAnio())
-    Console.WriteLine($"{anio}: {distrito} ({total} accidentes)");
-
-
 
 Medir("1. Total accidentes", () => analyzer.TotalAccidentes());
 Medir("2. Accidentes por distrito (top 5)", () => analyzer.AccidentesPorDistritoTop5());
@@ -94,22 +86,7 @@ using (var writer = new StreamWriter(ms, leaveOpen: true))
 ms.Position = 0;
 
 var df = DataFrame.LoadCsv(ms, separator: ';', dataTypes: tiposColumna);
-
-foreach (var columna in df.Columns)
-{
-    Console.WriteLine($"{columna.Name}: {columna.DataType}");
-}
 var dataFrame = new AccidentesDataFrame(df);
-Console.WriteLine($"DF Total: {dataFrame.TotalAccidentes()}");
-Console.WriteLine($"DF Alcohol+: {dataFrame.PositivosEnAlcohol()}");
-
-Console.WriteLine("LINQ combinado (3 años):");
-foreach (var (d, t) in analyzer.AccidentesPorDistritoTop5())
-    Console.WriteLine($"  {d}: {t}");
-
-Console.WriteLine("DF combinado (3 años):");
-foreach (var (d, t) in dataFrame.AccidentesPorDistritoTop5())
-    Console.WriteLine($"  {d}: {t}");
 //=========DATAFRAME======================
 //=======CONSULTAS DATAFRAME============
 Medir("1. Total accidentes (DF)", () => dataFrame.TotalAccidentes());
@@ -125,7 +102,7 @@ Medir("10. Accidentes por mes (DF)", () => dataFrame.AccidentesPorMes());
 Medir("11. Hora con más accidentes (DF)", () => dataFrame.HoraConMasAccidentes());
 Medir("12. Lesiones más frecuentes (DF)", () => dataFrame.LesionesMasFrecuentes());
 Medir("13. Tipo de vehículo más implicado (DF)", () => dataFrame.TipoVehiculoMasImplicado());
-Medir("14. Accidentes con peatones (DF)", () => dataFrame.DistritosConMasPeatones());
+Medir("14. Accidentes con peatones (DF)", () => dataFrame.AccidentesConPeatones());
 Medir("15. Proporción hombre/mujer (DF)", () => dataFrame.ProporcionHombreMujer());
 Medir("16. Distritos con más peatones (DF)", () => dataFrame.DistritosConMasPeatones());
 Medir("17. Fin de semana vs entre semana (DF)", () => dataFrame.FinDeSemanaVsEntreSemana());
