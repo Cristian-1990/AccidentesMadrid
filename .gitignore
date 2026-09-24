@@ -11,6 +11,3 @@ obj/
 # Resultados de tests
 [Tt]est[Rr]esult*/
 *.trx
-
-# Datos (los CSV son pesados, no van al repo)
-**/Data/*.csv
