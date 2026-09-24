@@ -2,6 +2,13 @@
 
 Práctica que analiza accidentes de tráfico de Madrid de 2024, 2025 y 2026 usando LINQ, PLINQ y DataFrames en C#.
 
+## Cómo ponerlo en marcha
+
+Los 3 CSV ya están metidos en `AccidentesMadrid.Back/Data/`, así que no hay que descargar nada, tiran directos.
+
+- Local: `dotnet run` desde `AccidentesMadrid.Back`
+- Docker: `docker compose up --build` desde la raíz
+
 ## Tecnologías
 
 - C# 14 / .NET
@@ -91,8 +98,10 @@ Ejecución real (`dotnet run`), 3 CSV fusionados, 130.864 filas leídas.
 
 ### Lo que se ve en los números
 
--LINQ gana: 818 ms vs 1097 ms de DataFrame.
--PLINQ (29b) tarda 41 ms, la versión normal 49 ms. Mejora poco, no merece la pena para 1 consulta con solo 3 particiones.
+- LINQ gana: 818 ms vs 1097 ms de DataFrame.
+- La consulta 9 (día de la semana) es la que más tarda en DataFrame, 230 ms, porque es la primera que toca fechas y ahí se rellena la caché. Las siguientes consultas con fecha ya van rápidas (16-51 ms) porque se reaprovecha.
+- Si quito esa consulta, DataFrame baja a 867 ms, casi empata con LINQ.
+- PLINQ (29b) tarda 41 ms, la versión normal 49 ms. Mejora poco, no merece la pena para 1 consulta con solo 3 particiones.
 
 ## Resumen 
 
